@@ -28,6 +28,7 @@
 
     <modules>
 
+        <module>customer-service</module>
     </modules>
 
     <build>
