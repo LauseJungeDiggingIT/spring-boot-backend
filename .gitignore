@@ -1,24 +1,51 @@
-# Compiled class file
-*.class
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
 
-# Log file
+# Maven
+target/
 *.log
+!.mvn/wrapper/maven-wrapper.jar
 
-# BlueJ files
-*.ctxt
+# Betriebssystemspezifische Dateien
+.DS_Store
+Thumbs.db
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
+# Java und andere IDE-spezifische Dateien
+*.class
 *.war
-*.nar
+*.jar
 *.ear
-*.zip
-*.tar.gz
-*.rar
+*.swp
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# Logs
+logs/
+nohup.out
+
+# Spring Boot spezifisch
+BOOT-INF/
+META-INF/
+org/
+
+# Datenbanken / Caches
+*.h2.db
+*.mv.db
+*.sqlite
+*.db
+*.lock
+*.ldb
+data/
+
+
+# Java- und Maven-Wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# Lombok Cache
+.lombok/
+
+# SonarQube / Testabdeckung
+.sonar/
+.coverage/
