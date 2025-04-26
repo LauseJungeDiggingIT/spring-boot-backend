@@ -22,6 +22,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      */
     List<Customer> findByLastName(String lastName);
 
+    /**
+     * Findet alle Kunden anhand des Spitznamens.
+     *
+     * @param nickName Der Spitzname des Kunden.
+     * @return Liste von Kunden, die den angegebenen Spitznamen haben.
+     */
+    List<Customer> findByNickName(String nickName);
+
     List<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 
 

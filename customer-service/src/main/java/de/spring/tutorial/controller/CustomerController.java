@@ -88,6 +88,17 @@ public class CustomerController {
 
     /**
      * API-Endpunkt zum Abrufen von Kunden anhand des Nachnamens.
+     * @param nickName Der Spitznamen des Kunden.
+     * @return ResponseEntity mit der Liste der Kunden oder 404 Not Found.
+     */
+    @GetMapping("/nickName/{nickName}")
+    public ResponseEntity<List<Customer>> getCustomersByNickName(@PathVariable String nickName) {
+        List<Customer> customers = customerService.getCustomersByNickName(nickName);
+        return customers.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(customers);
+    }
+
+    /**
+     * API-Endpunkt zum Abrufen von Kunden anhand des Nachnamens.
      * @param lastName Der Nachnamen des Kunden.
      * @return ResponseEntity mit der Liste der Kunden oder 404 Not Found.
      */

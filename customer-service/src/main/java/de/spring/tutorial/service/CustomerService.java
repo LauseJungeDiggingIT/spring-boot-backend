@@ -3,6 +3,7 @@ package de.spring.tutorial.service;
 import de.spring.tutorial.model.Customer;
 import de.spring.tutorial.exception.CustomerNotFoundException;
 import de.spring.tutorial.exception.DuplicateEmailException;
+import de.spring.tutorial.exception.DuplicateMobileNumberException;
 import de.spring.tutorial.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +59,10 @@ public class CustomerService {
             log.warn("Ein Kunde mit der E-Mail {} existiert bereits.", customer.getEmail());
             throw new DuplicateEmailException("Ein Kunde mit dieser E-Mail existiert bereits.");
         }
+        else if (customerRepository.findByMobileNumber(customer.getMobileNumber()).isPresent())  {
+            log.warn("Ein Kunde mit der Handynummer {} existiert bereits.", customer.getMobileNumber());
+            throw new DuplicateMobileNumberException("Ein Kunde mit dieser Handynummer existiert bereits.");
+        }
         return customerRepository.save(customer);
     }
 
@@ -91,9 +96,11 @@ public class CustomerService {
             throw new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND);
         }
         Customer existingCustomer = existing.get();
+        existingCustomer.setNickName(StringUtils.isNotBlank(customer.getNickName()) ? customer.getNickName() : existingCustomer.getNickName());
         existingCustomer.setFirstName(StringUtils.isNotBlank(customer.getFirstName()) ? customer.getFirstName() : existingCustomer.getFirstName());
         existingCustomer.setLastName(StringUtils.isNotBlank(customer.getLastName()) ? customer.getLastName() : existingCustomer.getLastName());
         existingCustomer.setPhoneNumber(StringUtils.isNotBlank(customer.getPhoneNumber()) ? customer.getPhoneNumber() : existingCustomer.getPhoneNumber());
+        existingCustomer.setMobileNumber(StringUtils.isNotBlank(customer.getMobileNumber()) ? customer.getMobileNumber() : existingCustomer.getMobileNumber());
         existingCustomer.setEmail(StringUtils.isNotBlank(customer.getEmail()) ? customer.getEmail() : existingCustomer.getEmail());
 
         log.info("Kunde mit der ID {} wurde aktualisiert.", id);
@@ -122,6 +129,16 @@ public class CustomerService {
      */
     public List<Customer> getCustomersByLastName(String lastName) {
         return customerRepository.findByLastName(lastName);
+    }
+
+    /**
+     * Holt alle Kunden anhand des Spitznamens.
+     *
+     * @param nickName Der Spitzname des Kunden.
+     * @return Liste von Kunden mit dem angegebenen Spitznamen.
+     */
+    public List<Customer> getCustomersByNickName(String nickName) {
+        return customerRepository.findByNickName(nickName);
     }
 
     /**

@@ -28,7 +28,7 @@ public class Customer {
     /**
      * Optionaler Spitzname des Kunden.
      */
-    private String nickname;
+    private String nickName;
 
     /**
      * Nachname des Kunden. Darf nicht Null sein.
@@ -49,9 +49,9 @@ public class Customer {
     private String phoneNumber;
 
     /**
-     * Mobile Telefonnummer des Kunden. Muss eindeutig, darf nicht Null sein.
+     * Mobile Telefonnummer des Kunden. Muss eindeutig und darf nicht null sein.
      */
-    @NotNull(message = "Die Telefonnummer muss angegeben werden!")
+    @NotNull(message = "Die Handynummer muss angegeben werden!")
     @Column(unique = true)
     private String mobileNumber;
 
