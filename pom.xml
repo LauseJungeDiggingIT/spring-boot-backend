@@ -29,7 +29,6 @@
     <modules>
 
         <module>customer-service</module>
-        <module>auth-service</module>
     </modules>
 
     <build>
