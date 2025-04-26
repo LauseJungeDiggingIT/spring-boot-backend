@@ -49,7 +49,7 @@ public class Customer {
     private String phoneNumber;
 
     /**
-     * Mobile Telefonnummer des Kunden. Muss eindeutig und nicht Null sein.
+     * Mobile Telefonnummer des Kunden. Muss eindeutig, darf nicht Null sein.
      */
     @NotNull(message = "Die Telefonnummer muss angegeben werden!")
     @Column(unique = true)
