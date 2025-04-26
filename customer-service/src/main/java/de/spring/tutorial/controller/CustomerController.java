@@ -142,7 +142,7 @@ public class CustomerController {
      * @param mobileNumber Die Handynummer des Kunden.
      * @return ResponseEntity mit dem Kunden oder 404 Not Found.
      */
-    @GetMapping("/phone/{mobileNumber}")
+    @GetMapping("/mobile/{mobileNumber}")
     public ResponseEntity<Customer> getCustomersByMobileNumber(@PathVariable String mobileNumber) {
         Customer customer = customerService.getCustomerByMobileNumber(mobileNumber)
                 .orElseThrow(() -> new RuntimeException("Keinen Kunden mit dieser Handynummer gefunden"));
