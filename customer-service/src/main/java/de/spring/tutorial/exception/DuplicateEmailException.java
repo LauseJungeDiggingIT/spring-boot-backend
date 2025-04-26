@@ -1,16 +1,12 @@
 package de.spring.tutorial.exception;
 
-/**
- * Exception, die geworfen wird, wenn ein Kunde mit der angegebenen E-Mail bereits existiert.
- */
-public class DuplicateEmailException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    /**
-     * Konstruktor für DuplicateEmailException.
-     *
-     * @param message Fehlermeldung, die den Fehler beschreibt.
-     */
+@ResponseStatus(HttpStatus.CONFLICT)
+public class DuplicateEmailException extends RuntimeException {
     public DuplicateEmailException(String message) {
         super(message);
     }
 }
+
