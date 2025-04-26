@@ -1,4 +1,5 @@
 package de.spring.tutorial.controller;
+
 import de.spring.tutorial.model.Customer;
 import de.spring.tutorial.service.CustomerService;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,7 @@ import java.util.List;
 
 /**
  * REST-Controller für die Customer-Entität.
- * Stellt API-Endpunkte für CRUD-Operationen bereit.
+ * Stellt API-Endpunkte für CRUD-Operationen sowie spezifische Suchfunktionen bereit.
  */
 @RestController
 @RequestMapping("/customers")
@@ -17,17 +18,19 @@ public class CustomerController {
     private final CustomerService customerService;
 
     /**
-     * Konstruktor für CustomerController mit Dependency-Injection.
-     * @param customerService Stellt die Geschäftslogik für Kundenoperationen bereit.
+     * Konstruktor für CustomerController mit Dependency Injection.
+     *
+     * @param customerService Service zur Bereitstellung der Geschäftslogik für Kundenoperationen.
      */
     public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
-    // <----------------Standard-Requests ---------------->
+    // <---------------- Standard-Requests ---------------->
 
     /**
-     * API-Endpunkt zum Abrufen aller Kunden.
+     * Ruft alle Kunden ab.
+     *
      * @return ResponseEntity mit der Liste aller Kunden.
      */
     @GetMapping
@@ -37,8 +40,9 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Erstellen eines neuen Kunden.
-     * @param customer JSON-Body mit Kundendaten.
+     * Erstellt einen neuen Kunden.
+     *
+     * @param customer JSON-Body mit den Kundendaten.
      * @return ResponseEntity mit dem erstellten Kunden.
      */
     @PostMapping
@@ -48,9 +52,10 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Löschen eines Kunden anhand der ID.
+     * Löscht einen Kunden anhand seiner ID.
+     *
      * @param id Die ID des zu löschenden Kunden.
-     * @return ResponseEntity ohne Inhalt.
+     * @return ResponseEntity ohne Inhalt (204 No Content).
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomerById(@PathVariable Long id) {
@@ -59,10 +64,11 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Aktualisieren der Kundendaten anhand der ID.
+     * Aktualisiert Kundendaten anhand der ID.
+     *
      * @param id Die ID des Kunden.
      * @param customer JSON-Body mit den neuen Kundendaten.
-     * @return ResponseEntity oder 404 Not Found.
+     * @return ResponseEntity mit dem aktualisierten Kunden oder 404 Not Found.
      */
     @PutMapping("/{id}")
     public ResponseEntity<Customer> updateCustomerDataById(@PathVariable Long id,
@@ -72,12 +78,13 @@ public class CustomerController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
-    // <----------------Spezifische-Requests ---------------->
+    // <---------------- Spezifische-Requests ---------------->
 
     /**
-     * API-Endpunkt zum Abrufen eines Kunden anhand der ID.
+     * Ruft einen Kunden anhand seiner ID ab.
+     *
      * @param id Die ID des Kunden.
-     * @return ResponseEntity mit dem Kunden.
+     * @return ResponseEntity mit dem Kunden oder 404 Not Found.
      */
     @GetMapping("/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
@@ -87,9 +94,10 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Abrufen von Kunden anhand des Nachnamens.
-     * @param nickName Der Spitznamen des Kunden.
-     * @return ResponseEntity mit der Liste der Kunden oder 404 Not Found.
+     * Sucht Kunden anhand ihres Spitznamens.
+     *
+     * @param nickName Der Spitzname des Kunden.
+     * @return ResponseEntity mit der Liste der gefundenen Kunden oder 404 Not Found.
      */
     @GetMapping("/nickName/{nickName}")
     public ResponseEntity<List<Customer>> getCustomersByNickName(@PathVariable String nickName) {
@@ -98,9 +106,10 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Abrufen von Kunden anhand des Nachnamens.
-     * @param lastName Der Nachnamen des Kunden.
-     * @return ResponseEntity mit der Liste der Kunden oder 404 Not Found.
+     * Sucht Kunden anhand ihres Nachnamens.
+     *
+     * @param lastName Der Nachname des Kunden.
+     * @return ResponseEntity mit der Liste der gefundenen Kunden oder 404 Not Found.
      */
     @GetMapping("/lastName/{lastName}")
     public ResponseEntity<List<Customer>> getCustomersByLastName(@PathVariable String lastName) {
@@ -108,6 +117,12 @@ public class CustomerController {
         return customers.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(customers);
     }
 
+    /**
+     * Durchsucht Kunden anhand eines Namens-Fragments.
+     *
+     * @param searchQuery Suchbegriff für Name oder Nachname.
+     * @return ResponseEntity mit der Liste der passenden Kunden oder 404 Not Found.
+     */
     @GetMapping("/search/{searchQuery}")
     public ResponseEntity<List<Customer>> searchCustomersByName(@PathVariable String searchQuery) {
         List<Customer> customers = customerService.searchCustomersByName(searchQuery);
@@ -115,9 +130,10 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Abrufen eines Kunden anhand der E-Mail.
-     * @param email Die E-Mail des Kunden.
-     * @return ResponseEntity mit dem Kunden.
+     * Ruft einen Kunden anhand seiner E-Mail-Adresse ab.
+     *
+     * @param email Die E-Mail-Adresse des Kunden.
+     * @return ResponseEntity mit dem Kunden oder 404 Not Found.
      */
     @GetMapping("/email/{email}")
     public ResponseEntity<Customer> getCustomerByEmail(@PathVariable String email) {
@@ -127,9 +143,10 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Abrufen von Kunden anhand der Telefonnummer.
+     * Sucht Kunden anhand ihrer Telefonnummer.
+     *
      * @param phoneNumber Die Telefonnummer des Kunden.
-     * @return ResponseEntity mit der Liste der Kunden oder 404 Not Found.
+     * @return ResponseEntity mit der Liste der gefundenen Kunden oder 404 Not Found.
      */
     @GetMapping("/phone/{phoneNumber}")
     public ResponseEntity<List<Customer>> getCustomersByPhoneNumber(@PathVariable String phoneNumber) {
@@ -138,16 +155,15 @@ public class CustomerController {
     }
 
     /**
-     * API-Endpunkt zum Abrufen von Kunden anhand der Telefonnummer.
+     * Ruft einen Kunden anhand seiner Handynummer ab.
+     *
      * @param mobileNumber Die Handynummer des Kunden.
      * @return ResponseEntity mit dem Kunden oder 404 Not Found.
      */
-    @GetMapping("/phone/{mobileNumber}")
+    @GetMapping("/mobile/{mobileNumber}")
     public ResponseEntity<Customer> getCustomersByMobileNumber(@PathVariable String mobileNumber) {
         Customer customer = customerService.getCustomerByMobileNumber(mobileNumber)
                 .orElseThrow(() -> new RuntimeException("Keinen Kunden mit dieser Handynummer gefunden"));
         return ResponseEntity.ok(customer);
     }
-
 }
-

@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /**
- * Repräsentiert einen Kunden (Customer) innerhalb der Anwendung.
- * Diese Entität wird mit einer Datenbanktabelle verknüpft und enthält
- * personenbezogene Daten wie Namen, Telefonnummern und E-Mail-Adresse.
+ * Repräsentiert einen Kunden innerhalb der Anwendung.
+ * Diese Entität wird einer Datenbanktabelle zugeordnet und enthält
+ * personenbezogene Daten wie Name, Telefonnummern und E-Mail-Adresse.
  */
 @Entity
 @Data
@@ -18,7 +18,7 @@ import lombok.*;
 public class Customer {
 
     /**
-     * Eindeutige ID des Kunden.
+     * Primärschlüssel: Eindeutige ID des Kunden.
      * Wird automatisch von der Datenbank generiert.
      */
     @Id
@@ -31,32 +31,37 @@ public class Customer {
     private String nickName;
 
     /**
-     * Nachname des Kunden. Darf nicht Null sein.
+     * Nachname des Kunden.
+     * Darf nicht {@code null} sein.
      */
     @NotNull(message = "Der Nachname muss angegeben werden!")
     private String lastName;
 
     /**
-     * Vorname des Kunden. Darf nicht Null sein.
+     * Vorname des Kunden.
+     * Darf nicht {@code null} sein.
      */
     @NotNull(message = "Der Vorname muss angegeben werden!")
     private String firstName;
 
     /**
-     * Telefonnummer des Kunden (z.B. Festnetz). Darf nicht Null sein.
+     * Telefonnummer des Kunden (z. B. Festnetznummer).
+     * Darf nicht {@code null} sein.
      */
     @NotNull(message = "Die Telefonnummer muss angegeben werden!")
     private String phoneNumber;
 
     /**
-     * Mobile Telefonnummer des Kunden. Muss eindeutig und darf nicht null sein.
+     * Handynummer des Kunden.
+     * Muss eindeutig und darf nicht {@code null} sein.
      */
     @NotNull(message = "Die Handynummer muss angegeben werden!")
     @Column(unique = true)
     private String mobileNumber;
 
     /**
-     * E-Mail-Adresse des Kunden. Muss eindeutig, gültig und nicht null sein.
+     * E-Mail-Adresse des Kunden.
+     * Muss eindeutig, gültig und darf nicht {@code null} sein.
      */
     @NotNull(message = "E-Mail-Adresse muss angegeben werden!")
     @Email(message = "Bitte eine gültige E-Mail-Adresse angeben!")

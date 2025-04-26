@@ -1,9 +1,9 @@
 package de.spring.tutorial.service;
 
-import de.spring.tutorial.model.Customer;
 import de.spring.tutorial.exception.CustomerNotFoundException;
 import de.spring.tutorial.exception.DuplicateEmailException;
 import de.spring.tutorial.exception.DuplicateMobileNumberException;
+import de.spring.tutorial.model.Customer;
 import de.spring.tutorial.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service-Klasse für die Geschäftslogik der Customer-Entität.
- * Enthält Methoden zum Abrufen, Speichern, Aktualisieren und Löschen von Kunden.
+ * Service-Klasse für die Geschäftslogik der {@link Customer}-Entität.
+ * Beinhaltet Methoden zum Erstellen, Lesen, Aktualisieren und Löschen von Kunden.
  */
 @Slf4j
 @Service
@@ -26,20 +26,20 @@ public class CustomerService {
     private static final String CUSTOMER_ID_PREFIX = "Kunde mit der ID ";
 
     /**
-     * Konstruktor für CustomerService mit Dependency-Injection.
+     * Konstruktor für den {@link CustomerService} mit Dependency Injection.
      *
-     * @param customerRepository Repository zum Zugriff auf die Kundendaten.
+     * @param customerRepository Repository für den Zugriff auf Kundendaten
      */
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
 
-    // ------------------ Standard Logik --------------------
+    // ------------------ Standard-Logik --------------------
 
     /**
-     * Holt alle Kunden aus der Datenbank.
+     * Ruft alle Kunden aus der Datenbank ab.
      *
-     * @return Liste aller Kunden.
+     * @return Liste aller Kunden
      */
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
@@ -47,19 +47,19 @@ public class CustomerService {
 
     /**
      * Speichert einen neuen Kunden in der Datenbank.
-     * Überprüft, ob bereits ein Kunde mit der angegebenen E-Mail existiert.
+     * Stellt sicher, dass E-Mail und Handynummer eindeutig sind.
      *
-     * @param customer Das zu speichernde Customer-Objekt.
-     * @return Der gespeicherte Kunde.
-     * @throws DuplicateEmailException wenn ein Kunde mit derselben E-Mail bereits existiert.
+     * @param customer das zu speichernde {@link Customer}-Objekt
+     * @return der gespeicherte Kunde
+     * @throws DuplicateEmailException wenn ein Kunde mit derselben E-Mail bereits existiert
+     * @throws DuplicateMobileNumberException wenn ein Kunde mit derselben Handynummer bereits existiert
      */
     @Transactional
     public Customer saveCustomer(Customer customer) {
-        if (customerRepository.findByEmail(customer.getEmail()).isPresent())  {
+        if (customerRepository.findByEmail(customer.getEmail()).isPresent()) {
             log.warn("Ein Kunde mit der E-Mail {} existiert bereits.", customer.getEmail());
             throw new DuplicateEmailException("Ein Kunde mit dieser E-Mail existiert bereits.");
-        }
-        else if (customerRepository.findByMobileNumber(customer.getMobileNumber()).isPresent())  {
+        } else if (customerRepository.findByMobileNumber(customer.getMobileNumber()).isPresent()) {
             log.warn("Ein Kunde mit der Handynummer {} existiert bereits.", customer.getMobileNumber());
             throw new DuplicateMobileNumberException("Ein Kunde mit dieser Handynummer existiert bereits.");
         }
@@ -67,10 +67,10 @@ public class CustomerService {
     }
 
     /**
-     * Löscht einen Kunden anhand der ID.
+     * Löscht einen Kunden anhand seiner ID.
      *
-     * @param id Die ID des zu löschenden Kunden.
-     * @throws CustomerNotFoundException wenn der Kunde mit der angegebenen ID nicht existiert.
+     * @param id die ID des zu löschenden Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
      */
     @Transactional
     public void deleteCustomerById(Long id) {
@@ -82,26 +82,25 @@ public class CustomerService {
     }
 
     /**
-     * Aktualisiert die Daten eines bestehenden Kunden anhand der ID.
+     * Aktualisiert die Daten eines bestehenden Kunden.
+     * Nur Felder, die nicht leer sind, werden aktualisiert.
      *
-     * @param id       Die ID des zu aktualisierenden Kunden.
-     * @param customer Customer-Objekt mit den neuen Daten.
-     * @return Optional<Customer> mit dem aktualisierten Kunden, falls vorhanden.
-     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert.
+     * @param id die ID des zu aktualisierenden Kunden
+     * @param customer das {@link Customer}-Objekt mit neuen Werten
+     * @return Optional mit dem aktualisierten Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
      */
     @Transactional
     public Optional<Customer> updateCustomerById(Long id, Customer customer) {
-        Optional<Customer> existing = customerRepository.findById(id);
-        if (existing.isEmpty()) {
-            throw new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND);
-        }
-        Customer existingCustomer = existing.get();
-        existingCustomer.setNickName(StringUtils.isNotBlank(customer.getNickName()) ? customer.getNickName() : existingCustomer.getNickName());
-        existingCustomer.setFirstName(StringUtils.isNotBlank(customer.getFirstName()) ? customer.getFirstName() : existingCustomer.getFirstName());
-        existingCustomer.setLastName(StringUtils.isNotBlank(customer.getLastName()) ? customer.getLastName() : existingCustomer.getLastName());
-        existingCustomer.setPhoneNumber(StringUtils.isNotBlank(customer.getPhoneNumber()) ? customer.getPhoneNumber() : existingCustomer.getPhoneNumber());
-        existingCustomer.setMobileNumber(StringUtils.isNotBlank(customer.getMobileNumber()) ? customer.getMobileNumber() : existingCustomer.getMobileNumber());
-        existingCustomer.setEmail(StringUtils.isNotBlank(customer.getEmail()) ? customer.getEmail() : existingCustomer.getEmail());
+        Customer existingCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND));
+
+        existingCustomer.setNickName(StringUtils.defaultIfBlank(customer.getNickName(), existingCustomer.getNickName()));
+        existingCustomer.setFirstName(StringUtils.defaultIfBlank(customer.getFirstName(), existingCustomer.getFirstName()));
+        existingCustomer.setLastName(StringUtils.defaultIfBlank(customer.getLastName(), existingCustomer.getLastName()));
+        existingCustomer.setPhoneNumber(StringUtils.defaultIfBlank(customer.getPhoneNumber(), existingCustomer.getPhoneNumber()));
+        existingCustomer.setMobileNumber(StringUtils.defaultIfBlank(customer.getMobileNumber(), existingCustomer.getMobileNumber()));
+        existingCustomer.setEmail(StringUtils.defaultIfBlank(customer.getEmail(), existingCustomer.getEmail()));
 
         log.info("Kunde mit der ID {} wurde aktualisiert.", id);
         return Optional.of(customerRepository.save(existingCustomer));
@@ -110,11 +109,11 @@ public class CustomerService {
     // ------------------ Spezifische Logik --------------------
 
     /**
-     * Holt einen Kunden anhand der ID.
+     * Ruft einen Kunden anhand seiner ID ab.
      *
-     * @param id Die ID des Kunden.
-     * @return Optional<Customer> des gefundenen Kunden.
-     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert.
+     * @param id die ID des Kunden
+     * @return Optional mit dem gefundenen Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
      */
     public Optional<Customer> getCustomerById(Long id) {
         return Optional.ofNullable(customerRepository.findById(id)
@@ -122,58 +121,60 @@ public class CustomerService {
     }
 
     /**
-     * Holt alle Kunden anhand des Nachnamens.
+     * Ruft alle Kunden mit dem angegebenen Nachnamen ab.
      *
-     * @param lastName Der Nachname des Kunden.
-     * @return Liste von Kunden mit dem angegebenen Nachnamen.
+     * @param lastName der Nachname des Kunden
+     * @return Liste von Kunden mit übereinstimmendem Nachnamen
      */
     public List<Customer> getCustomersByLastName(String lastName) {
         return customerRepository.findByLastName(lastName);
     }
 
     /**
-     * Holt alle Kunden anhand des Spitznamens.
+     * Ruft alle Kunden mit dem angegebenen Spitznamen ab.
      *
-     * @param nickName Der Spitzname des Kunden.
-     * @return Liste von Kunden mit dem angegebenen Spitznamen.
+     * @param nickName der Spitzname des Kunden
+     * @return Liste von Kunden mit übereinstimmendem Spitznamen
      */
     public List<Customer> getCustomersByNickName(String nickName) {
         return customerRepository.findByNickName(nickName);
     }
 
     /**
-     * Holt alle Kunden die den Suchkriterien entsprechen
-     * @param searchQuery Querries in die Suche einbezogen werden (hier Nach- und Vorname)
-     * @return Liste von Suchtreffern
+     * Sucht Kunden anhand eines Suchbegriffs im Vor- oder Nachnamen (case-insensitive).
+     *
+     * @param searchQuery der Suchbegriff
+     * @return Liste von passenden Kunden
      */
     public List<Customer> searchCustomersByName(String searchQuery) {
         return customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchQuery, searchQuery);
     }
 
     /**
-     * Holt einen Kunden anhand der E-Mail.
+     * Ruft einen Kunden anhand seiner E-Mail-Adresse ab.
      *
-     * @param email Die E-Mail des Kunden.
-     * @return Optional<Customer> des gefundenen Kunden.
+     * @param email die E-Mail-Adresse des Kunden
+     * @return Optional mit dem gefundenen Kunden
      */
     public Optional<Customer> getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
 
     /**
-     * Holt alle Kunden anhand der Telefonnummer.
+     * Ruft alle Kunden mit der angegebenen Telefonnummer ab.
      *
-     * @param phoneNumber Die Telefonnummer des Kunden.
-     * @return Liste von Kunden mit der angegebenen Telefonnummer.
+     * @param phoneNumber die Telefonnummer des Kunden
+     * @return Liste von Kunden mit übereinstimmender Telefonnummer
      */
     public List<Customer> getCustomersByPhoneNumber(String phoneNumber) {
         return customerRepository.findByPhoneNumber(phoneNumber);
     }
+
     /**
-     * Holt einen Kunden anhand der Handynummer.
+     * Ruft einen Kunden anhand seiner Handynummer ab.
      *
-     * @param mobileNumber Die Handynummer des Kunden.
-     * @return Liste von Kunden mit der angegebenen Handynummer.
+     * @param mobileNumber die Handynummer des Kunden
+     * @return Optional mit dem gefundenen Kunden
      */
     public Optional<Customer> getCustomerByMobileNumber(String mobileNumber) {
         return customerRepository.findByMobileNumber(mobileNumber);
