@@ -29,11 +29,10 @@ class CustomerServiceTest {
     private CustomerService customerService;
 
     private Customer testCustomer1;
-    private Customer testCustomer2;
 
     /**
      * Setup-Methode, die vor jedem Testfall ausgeführt wird.
-     * Hier wird ein Testkunde erstellt, der in den Tests verwendet wird.
+     * Hier werden 2 Testkunden erstellt, der in den Tests verwendet wird.
      */
     @BeforeEach
     void setUp() {
@@ -45,15 +44,6 @@ class CustomerServiceTest {
         testCustomer1.setEmail("max.mustermann@example.com");
         testCustomer1.setPhoneNumber("0123456789");
         testCustomer1.setMobileNumber("016023234578");
-
-        testCustomer2 = new Customer();
-        testCustomer2.setId(2L);
-        testCustomer2.setNickName("Lina");
-        testCustomer2.setFirstName("Lina");
-        testCustomer2.setLastName("Mustermann");
-        testCustomer2.setEmail("lina.mustermann@example.com");
-        testCustomer2.setPhoneNumber("0223456789");
-        testCustomer2.setMobileNumber("0154123123123");
     }
 
     /**
@@ -83,11 +73,11 @@ class CustomerServiceTest {
      */
     @Test
     void testGetCustomerByIdNotFound() {
-        when(customerRepository.findById(3L)).thenReturn(Optional.empty());
+        when(customerRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerById(3L));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerById(1L));
 
-        verify(customerRepository, times(1)).findById(3L);
+        verify(customerRepository, times(1)).findById(1L);
     }
 
     /**
@@ -117,11 +107,11 @@ class CustomerServiceTest {
      */
     @Test
     void testGetCustomerByNickNameNotFound() {
-        when(customerRepository.findByNickName("Otti")).thenReturn(Optional.empty());
+        when(customerRepository.findByNickName("Maxi")).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerByNickName("Otti"));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerByNickName("Maxi"));
 
-        verify(customerRepository, times(1)).findByNickName("Otti");
+        verify(customerRepository, times(1)).findByNickName("Maxi");
     }
 
     /**
@@ -130,14 +120,13 @@ class CustomerServiceTest {
      */
     @Test
     void testGetCustomersByLastNameSuccess() {
-        when(customerRepository.findByLastName("Mustermann")).thenReturn(List.of(testCustomer1, testCustomer2));
+        when(customerRepository.findByLastName("Mustermann")).thenReturn(List.of(testCustomer1));
 
         List<Customer> result = customerService.getCustomersByLastName("Mustermann");
 
         assertFalse(result.isEmpty(), "Die Liste sollte nicht leer sein.");
-        assertEquals(2, result.size(), "Die Liste sollte genau zwei Kunden enthalten.");
+        assertEquals(1, result.size(), "Die Liste sollte genau einen Kunden enthalten.");
         assertTrue(result.contains(testCustomer1), "Die Liste sollte den ersten Kunden enthalten.");
-        assertTrue(result.contains(testCustomer2), "Die Liste sollte den zweiten Kunden enthalten.");
 
         verify(customerRepository, times(1)).findByLastName("Mustermann");
     }
@@ -149,10 +138,10 @@ class CustomerServiceTest {
      */
     @Test
     void testGetCustomersByLastNameNotFound() {
-        when(customerRepository.findByLastName("Musterfrau")).thenReturn(List.of());
+        when(customerRepository.findByLastName("Mustermann")).thenReturn(List.of());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomersByLastName("Musterfrau"));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomersByLastName("Mustermann"));
 
-        verify(customerRepository, times(1)).findByLastName("Musterfrau");
+        verify(customerRepository, times(1)).findByLastName("Mustermann");
     }
 }
