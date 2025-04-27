@@ -15,12 +15,11 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     /**
-     * Findet alle Kunden mit dem angegebenen Nachnamen.
+     * Findet alle Kunden, die nicht als gelöscht markiert wurden (Soft-Delete-Logik).
      *
-     * @param lastName der Nachname des Kunden
-     * @return Liste der Kunden mit übereinstimmendem Nachnamen
+     * @return Liste der aktiven Kunden (deleted = false)
      */
-    List<Customer> findByLastName(String lastName);
+    List<Customer> findByDeletedFalse();
 
     /**
      * Findet alle Kunden mit dem angegebenen Spitznamen.
@@ -28,7 +27,15 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * @param nickName der Spitzname des Kunden
      * @return Liste der Kunden mit übereinstimmendem Spitznamen
      */
-    List<Customer> findByNickName(String nickName);
+    Optional<Customer> findByNickName(String nickName);
+
+    /**
+     * Findet alle Kunden mit dem angegebenen Nachnamen.
+     *
+     * @param lastName der Nachname des Kunden
+     * @return Liste der Kunden mit übereinstimmendem Nachnamen
+     */
+    List<Customer> findByLastName(String lastName);
 
     /**
      * Findet alle Kunden, deren Vor- oder Nachname (case-insensitive) den angegebenen Suchbegriff enthält.
@@ -63,10 +70,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      */
     Optional<Customer> findByMobileNumber(String mobileNumber);
 
-    /**
-     * Findet alle Kunden, die nicht als gelöscht markiert wurden (Soft-Delete-Logik).
-     *
-     * @return Liste der aktiven Kunden (deleted = false)
-     */
-    List<Customer> findByDeletedFalse();
 }

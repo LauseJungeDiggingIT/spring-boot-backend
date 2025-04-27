@@ -16,14 +16,23 @@ import java.util.Optional;
 /**
  * Service-Klasse für die Geschäftslogik der {@link Customer}-Entität.
  * Beinhaltet Methoden zum Erstellen, Lesen, Aktualisieren und Löschen von Kunden.
+ * Zusätzlich werden Methoden für das Abrufen von Kunden basierend auf verschiedenen Attributen wie
+ * ID, Spitzname, Nachname, E-Mail-Adresse und Telefonnummer bereitgestellt.
+ * Diese Klasse stellt auch Methoden für Soft- und Hard-Deletes von Kunden zur Verfügung.
  */
 @Slf4j
 @Service
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private static final String CUSTOMER_NOT_FOUND = " nicht gefunden.";
+    private static final String CUSTOMER_NOT_FOUND = " wurde nicht gefunden.";
     private static final String CUSTOMER_ID_PREFIX = "Kunde mit der ID ";
+    private static final String CUSTOMER_NICKNAME = "Kunde mit dem Spitznamen ";
+    private static final String CUSTOMER_LASTNAME = "Kunde mit dem Nachnamen ";
+    private static final String CUSTOMER_NAME = "Kunde mit dem Namen ";
+    private static final String CUSTOMER_EMAIL = "Kunde mit der E-Mail ";
+    private static final String CUSTOMER_PHONE = "Kunde mit der Telefonnummer ";
+    private static final String CUSTOMER_MOBILE = "Kunde mit der Handynummer ";
 
     /**
      * Konstruktor für den {@link CustomerService} mit Dependency Injection.
@@ -46,6 +55,15 @@ public class CustomerService {
     }
 
     /**
+     * Ruft alle Kunden ab, die nicht als gelöscht markiert wurden (Soft-Delete).
+     *
+     * @return Liste von nicht gelöschten Kunden
+     */
+    public List<Customer> getAllActiveCustomers() {
+        return customerRepository.findByDeletedFalse();
+    }
+
+    /**
      * Speichert einen neuen Kunden in der Datenbank.
      * Stellt sicher, dass E-Mail und Handynummer eindeutig sind.
      *
@@ -64,6 +82,31 @@ public class CustomerService {
             throw new DuplicateMobileNumberException("Ein Kunde mit dieser Handynummer existiert bereits.");
         }
         return customerRepository.save(customer);
+    }
+
+    /**
+     * Aktualisiert die Daten eines bestehenden Kunden.
+     * Nur Felder, die nicht leer sind, werden aktualisiert.
+     *
+     * @param id die ID des zu aktualisierenden Kunden
+     * @param customer das {@link Customer}-Objekt mit neuen Werten
+     * @return Optional mit dem aktualisierten Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
+     */
+    @Transactional
+    public Optional<Customer> updateCustomerById(Long id, Customer customer) {
+        Customer existingCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND));
+
+        existingCustomer.setNickName(StringUtils.defaultIfBlank(customer.getNickName(), existingCustomer.getNickName()));
+        existingCustomer.setFirstName(StringUtils.defaultIfBlank(customer.getFirstName(), existingCustomer.getFirstName()));
+        existingCustomer.setLastName(StringUtils.defaultIfBlank(customer.getLastName(), existingCustomer.getLastName()));
+        existingCustomer.setPhoneNumber(StringUtils.defaultIfBlank(customer.getPhoneNumber(), existingCustomer.getPhoneNumber()));
+        existingCustomer.setMobileNumber(StringUtils.defaultIfBlank(customer.getMobileNumber(), existingCustomer.getMobileNumber()));
+        existingCustomer.setEmail(StringUtils.defaultIfBlank(customer.getEmail(), existingCustomer.getEmail()));
+
+        log.info("Kunde mit der ID {} wurde aktualisiert.", id);
+        return Optional.of(customerRepository.save(existingCustomer));
     }
 
     /**
@@ -100,31 +143,6 @@ public class CustomerService {
         log.info("Kunde mit der ID {} wurde hard gelöscht.", id);
     }
 
-    /**
-     * Aktualisiert die Daten eines bestehenden Kunden.
-     * Nur Felder, die nicht leer sind, werden aktualisiert.
-     *
-     * @param id die ID des zu aktualisierenden Kunden
-     * @param customer das {@link Customer}-Objekt mit neuen Werten
-     * @return Optional mit dem aktualisierten Kunden
-     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
-     */
-    @Transactional
-    public Optional<Customer> updateCustomerById(Long id, Customer customer) {
-        Customer existingCustomer = customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND));
-
-        existingCustomer.setNickName(StringUtils.defaultIfBlank(customer.getNickName(), existingCustomer.getNickName()));
-        existingCustomer.setFirstName(StringUtils.defaultIfBlank(customer.getFirstName(), existingCustomer.getFirstName()));
-        existingCustomer.setLastName(StringUtils.defaultIfBlank(customer.getLastName(), existingCustomer.getLastName()));
-        existingCustomer.setPhoneNumber(StringUtils.defaultIfBlank(customer.getPhoneNumber(), existingCustomer.getPhoneNumber()));
-        existingCustomer.setMobileNumber(StringUtils.defaultIfBlank(customer.getMobileNumber(), existingCustomer.getMobileNumber()));
-        existingCustomer.setEmail(StringUtils.defaultIfBlank(customer.getEmail(), existingCustomer.getEmail()));
-
-        log.info("Kunde mit der ID {} wurde aktualisiert.", id);
-        return Optional.of(customerRepository.save(existingCustomer));
-    }
-
     // ------------------ Spezifische Logik --------------------
 
     /**
@@ -140,23 +158,30 @@ public class CustomerService {
     }
 
     /**
+     * Ruft einen Kunden mit dem angegebenen Spitznamen ab.
+     *
+     * @param nickName der Spitzname des Kunden
+     * @return Kunde mit übereinstimmendem Spitznamen
+     * @throws CustomerNotFoundException wenn kein Kunde mit dem angegebenen Spitznamen existiert
+     */
+    public Optional<Customer> getCustomerByNickName(String nickName) {
+        return Optional.ofNullable(customerRepository.findByNickName(nickName)
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_NICKNAME + nickName + CUSTOMER_NOT_FOUND)));
+    }
+
+    /**
      * Ruft alle Kunden mit dem angegebenen Nachnamen ab.
      *
      * @param lastName der Nachname des Kunden
      * @return Liste von Kunden mit übereinstimmendem Nachnamen
+     * @throws CustomerNotFoundException wenn keine Kunden mit dem angegebenen Nachnamen existieren
      */
     public List<Customer> getCustomersByLastName(String lastName) {
-        return customerRepository.findByLastName(lastName);
-    }
-
-    /**
-     * Ruft alle Kunden mit dem angegebenen Spitznamen ab.
-     *
-     * @param nickName der Spitzname des Kunden
-     * @return Liste von Kunden mit übereinstimmendem Spitznamen
-     */
-    public List<Customer> getCustomersByNickName(String nickName) {
-        return customerRepository.findByNickName(nickName);
+        List<Customer> customers = customerRepository.findByLastName(lastName);
+        if (customers.isEmpty()) {
+            throw new CustomerNotFoundException(CUSTOMER_LASTNAME + lastName + CUSTOMER_NOT_FOUND);
+        }
+        return customers;
     }
 
     /**
@@ -164,9 +189,14 @@ public class CustomerService {
      *
      * @param searchQuery der Suchbegriff
      * @return Liste von passenden Kunden
+     * @throws CustomerNotFoundException wenn keine Kunden gefunden werden
      */
     public List<Customer> searchCustomersByName(String searchQuery) {
-        return customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchQuery, searchQuery);
+        List<Customer> customers = customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchQuery, searchQuery);
+        if (customers.isEmpty()) {
+            throw new CustomerNotFoundException(CUSTOMER_NAME + searchQuery + CUSTOMER_NOT_FOUND);
+        }
+        return customers;
     }
 
     /**
@@ -174,9 +204,11 @@ public class CustomerService {
      *
      * @param email die E-Mail-Adresse des Kunden
      * @return Optional mit dem gefundenen Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen E-Mail existiert
      */
     public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.findByEmail(email);
+        return Optional.ofNullable(customerRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_EMAIL + email + CUSTOMER_NOT_FOUND)));
     }
 
     /**
@@ -184,9 +216,14 @@ public class CustomerService {
      *
      * @param phoneNumber die Telefonnummer des Kunden
      * @return Liste von Kunden mit übereinstimmender Telefonnummer
+     * @throws CustomerNotFoundException wenn keine Kunden mit der angegebenen Telefonnummer existieren
      */
     public List<Customer> getCustomersByPhoneNumber(String phoneNumber) {
-        return customerRepository.findByPhoneNumber(phoneNumber);
+        List<Customer> customers = customerRepository.findByPhoneNumber(phoneNumber);
+        if (customers.isEmpty()) {
+            throw new CustomerNotFoundException(CUSTOMER_PHONE + phoneNumber + CUSTOMER_NOT_FOUND);
+        }
+        return customers;
     }
 
     /**
@@ -194,17 +231,11 @@ public class CustomerService {
      *
      * @param mobileNumber die Handynummer des Kunden
      * @return Optional mit dem gefundenen Kunden
+     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen Handynummer existiert
      */
     public Optional<Customer> getCustomerByMobileNumber(String mobileNumber) {
-        return customerRepository.findByMobileNumber(mobileNumber);
+        return Optional.ofNullable(customerRepository.findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_MOBILE + mobileNumber + CUSTOMER_NOT_FOUND)));
     }
 
-    /**
-     * Ruft alle Kunden ab, die nicht als gelöscht markiert wurden (Soft-Delete).
-     *
-     * @return Liste von nicht gelöschten Kunden
-     */
-    public List<Customer> getAllActiveCustomers() {
-        return customerRepository.findByDeletedFalse();
-    }
 }

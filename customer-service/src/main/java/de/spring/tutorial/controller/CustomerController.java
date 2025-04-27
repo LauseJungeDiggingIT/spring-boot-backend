@@ -52,6 +52,22 @@ public class CustomerController {
     }
 
     /**
+     * Aktualisiert die Informationen eines bestehenden Kunden.
+     *
+     * @param id       Die ID des Kunden, der aktualisiert werden soll.
+     * @param customer Das Kundenobjekt mit den aktualisierten Informationen.
+     * @return ResponseEntity mit dem aktualisierten Kunden.
+     * @throws CustomerNotFoundException Wenn der Kunde nicht gefunden wurde oder die Aktualisierung fehlgeschlagen ist.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id,
+                                                   @RequestBody Customer customer) {
+        return customerService.updateCustomerById(id, customer)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new CustomerNotFoundException("Kunde mit ID " + id + " nicht gefunden oder Aktualisierung fehlgeschlagen"));
+    }
+
+    /**
      * Erstellt einen neuen Kunden.
      *
      * @param customer Das Kundenobjekt, das erstellt werden soll.
@@ -88,22 +104,6 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Aktualisiert die Informationen eines bestehenden Kunden.
-     *
-     * @param id       Die ID des Kunden, der aktualisiert werden soll.
-     * @param customer Das Kundenobjekt mit den aktualisierten Informationen.
-     * @return ResponseEntity mit dem aktualisierten Kunden.
-     * @throws CustomerNotFoundException Wenn der Kunde nicht gefunden wurde oder die Aktualisierung fehlgeschlagen ist.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable Long id,
-                                                   @RequestBody Customer customer) {
-        return customerService.updateCustomerById(id, customer)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new CustomerNotFoundException("Kunde mit ID " + id + " nicht gefunden oder Aktualisierung fehlgeschlagen"));
-    }
-
     // <---------------- Spezifische-Requests ---------------->
 
     /**
@@ -128,13 +128,12 @@ public class CustomerController {
      * @throws CustomerNotFoundException Wenn kein Kunde mit dem angegebenen Spitznamen gefunden wurde.
      */
     @GetMapping("/nickName/{nickName}")
-    public ResponseEntity<List<Customer>> getCustomersByNickName(@PathVariable String nickName) {
-        List<Customer> customers = customerService.getCustomersByNickName(nickName);
-        if (customers.isEmpty()) {
-            throw new CustomerNotFoundException("Kein Kunde mit Spitzname '" + nickName + "' gefunden");
-        }
-        return ResponseEntity.ok(customers);
+    public ResponseEntity<Customer> getCustomerByNickName(@PathVariable String nickName) {
+        return customerService.getCustomerByNickName(nickName)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new CustomerNotFoundException("Kunde mit dem Spitznamen " + nickName + " nicht gefunden"));
     }
+
 
     /**
      * Ruft Kunden anhand ihres Nachnamens ab.
@@ -212,3 +211,4 @@ public class CustomerController {
                 .orElseThrow(() -> new CustomerNotFoundException("Kein Kunde mit Handynummer '" + mobileNumber + "' gefunden"));
     }
 }
+

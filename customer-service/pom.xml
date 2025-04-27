@@ -129,11 +129,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>23</source>
+                    <target>23</target>
                     <release>${java.version}</release>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
+                    <compilerArgs>--enable-preview
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
