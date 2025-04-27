@@ -17,15 +17,11 @@ public final class ErrorResponseUtil {
      * Erstellt ein {@link ErrorResponse}-Objekt mit aktuellem Zeitstempel, HTTP-Status und einer Nachricht.
      *
      * @param status Der HTTP-Status.
+     * @param errorCode Der Fehlercode.
      * @param message Die Fehlermeldung.
      * @return Ein neues {@link ErrorResponse}-Objekt.
      */
-    public static ErrorResponse createErrorResponse(HttpStatus status, String message) {
-        return new ErrorResponse(
-                LocalDateTime.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                message
-        );
+    public static ErrorResponse createErrorResponse(HttpStatus status, String errorCode, String message) {
+        return new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), errorCode, message);
     }
 }

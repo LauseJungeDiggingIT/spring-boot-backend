@@ -45,7 +45,7 @@ public class Customer {
     private String firstName;
 
     /**
-     * Telefonnummer des Kunden (z. B. Festnetznummer).
+     * Telefonnummer des Kunden (z.B. Festnetznummer).
      * Darf nicht {@code null} sein.
      */
     @NotNull(message = "Die Telefonnummer muss angegeben werden!")
@@ -67,4 +67,10 @@ public class Customer {
     @Email(message = "Bitte eine gültige E-Mail-Adresse angeben!")
     @Column(unique = true)
     private String email;
+
+    /**
+     * Gibt an, ob der Kunde als gelöscht markiert wurde (Soft-Delete).
+     * Standardmäßig {@code false}.
+     */
+    private boolean deleted = false;
 }

@@ -9,8 +9,10 @@ import java.time.LocalDateTime;
  * @param timestamp Zeitpunkt des Fehlers.
  * @param status HTTP-Statuscode.
  * @param error Kurzbeschreibung des Fehlertyps.
+ * @param errorCode FehlerCode.
  * @param message Detaillierte Fehlermeldung.
  */
-public record ErrorResponse(LocalDateTime timestamp, int status, String error, String message) {
+public record ErrorResponse(LocalDateTime timestamp, int status, String error, String errorCode, String message) {
 
 }
+

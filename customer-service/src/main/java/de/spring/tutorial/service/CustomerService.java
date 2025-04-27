@@ -67,18 +67,37 @@ public class CustomerService {
     }
 
     /**
-     * Löscht einen Kunden anhand seiner ID.
+     * Führt ein Soft-Delete durch, indem das "deleted"-Flag gesetzt wird.
      *
-     * @param id die ID des zu löschenden Kunden
-     * @throws CustomerNotFoundException wenn kein Kunde mit der angegebenen ID existiert
+     * @param id Die ID des zu löschenden Kunden.
+     * @throws CustomerNotFoundException wenn der Kunde mit der angegebenen ID nicht existiert.
      */
     @Transactional
-    public void deleteCustomerById(Long id) {
+    public void softDeleteCustomerById(Long id) {
+        Optional<Customer> customerOpt = customerRepository.findById(id);
+        if (customerOpt.isEmpty()) {
+            throw new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND);
+        }
+
+        Customer customer = customerOpt.get();
+        customer.setDeleted(true);  // Soft-Delete durchführen
+        customerRepository.save(customer);
+        log.info("Kunde mit der ID {} wurde soft gelöscht.", id);
+    }
+
+    /**
+     * Führt ein Hard-Delete durch, indem der Kunde aus der Datenbank gelöscht wird.
+     *
+     * @param id Die ID des zu löschenden Kunden.
+     * @throws CustomerNotFoundException wenn der Kunde mit der angegebenen ID nicht existiert.
+     */
+    @Transactional
+    public void hardDeleteCustomerById(Long id) {
         if (!customerRepository.existsById(id)) {
             throw new CustomerNotFoundException(CUSTOMER_ID_PREFIX + id + CUSTOMER_NOT_FOUND);
         }
-        customerRepository.deleteById(id);
-        log.info("Kunde mit der ID {} wurde gelöscht.", id);
+        customerRepository.deleteById(id);  // Hard-Delete durchführen
+        log.info("Kunde mit der ID {} wurde hard gelöscht.", id);
     }
 
     /**
@@ -178,5 +197,14 @@ public class CustomerService {
      */
     public Optional<Customer> getCustomerByMobileNumber(String mobileNumber) {
         return customerRepository.findByMobileNumber(mobileNumber);
+    }
+
+    /**
+     * Ruft alle Kunden ab, die nicht als gelöscht markiert wurden (Soft-Delete).
+     *
+     * @return Liste von nicht gelöschten Kunden
+     */
+    public List<Customer> getAllActiveCustomers() {
+        return customerRepository.findByDeletedFalse();
     }
 }
