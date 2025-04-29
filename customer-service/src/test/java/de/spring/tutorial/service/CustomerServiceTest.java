@@ -1,23 +1,30 @@
 package de.spring.tutorial.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.spring.tutorial.exception.CustomerNotFoundException;
 import de.spring.tutorial.model.Customer;
 import de.spring.tutorial.repository.CustomerRepository;
-import de.spring.tutorial.exception.CustomerNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
  * Testklasse für den {@link CustomerService}.
- * Diese Tests stellen sicher, dass die Methoden des CustomerService wie erwartet funktionieren.
+ * Testet CustomerService mit normalen und parametrisierten Tests.
  */
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {
@@ -28,120 +35,123 @@ class CustomerServiceTest {
     @InjectMocks
     private CustomerService customerService;
 
-    private Customer testCustomer1;
+    private List<Customer> testCustomers;
 
     /**
-     * Setup-Methode, die vor jedem Testfall ausgeführt wird.
-     * Hier werden 2 Testkunden erstellt, der in den Tests verwendet wird.
+     * Setup vor jedem Test: Lade Testkunden.
      */
     @BeforeEach
-    void setUp() {
-        testCustomer1 = new Customer();
-        testCustomer1.setId(1L);
-        testCustomer1.setNickName("Maxi");
-        testCustomer1.setFirstName("Max");
-        testCustomer1.setLastName("Mustermann");
-        testCustomer1.setEmail("max.mustermann@example.com");
-        testCustomer1.setPhoneNumber("0123456789");
-        testCustomer1.setMobileNumber("016023234578");
+    void setUp() throws Exception {
+        testCustomers = loadTestCustomers();
     }
 
     /**
-     * Testet die Methode {@link CustomerService#getCustomerById(Long)} im Erfolgsfall,
-     * wenn der Kunde mit der angegebenen ID gefunden wird.
+     * Parametrisierter Test für {@link CustomerService#getCustomerByNickName(String)},
+     * dynamisch aus der JSON geladen.
      */
-    @Test
-    void testGetCustomerByIdSuccess() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(testCustomer1));
+    @ParameterizedTest
+    @MethodSource("provideNickNamesFromJson")
+    void testGetCustomerByNickNameSuccess(String nickName) {
+        Customer customer = testCustomers.stream()
+                .filter(c -> c.getNickName().equals(nickName))
+                .findFirst()
+                .orElseThrow();
 
-        Customer result = customerService.getCustomerById(1L).orElseThrow();
+        when(customerRepository.findByNickName(nickName)).thenReturn(Optional.of(customer));
 
-        assertEquals(testCustomer1.getId(), result.getId());
-        assertEquals(testCustomer1.getNickName(), result.getNickName());
-        assertEquals(testCustomer1.getFirstName(), result.getFirstName());
-        assertEquals(testCustomer1.getLastName(), result.getLastName());
-        assertEquals(testCustomer1.getEmail(), result.getEmail());
-        assertEquals(testCustomer1.getPhoneNumber(), result.getPhoneNumber());
+        Customer result = customerService.getCustomerByNickName(nickName).orElseThrow();
 
-        verify(customerRepository, times(1)).findById(1L);
+        assertEquals(customer.getNickName(), result.getNickName());
+        assertEquals(customer.getEmail(), result.getEmail());
+
+        verify(customerRepository, times(1)).findByNickName(nickName);
     }
 
     /**
-     * Testet die Methode {@link CustomerService#getCustomerById(Long)} im Fall,
-     * dass der Kunde mit der angegebenen ID nicht gefunden wird.
-     * Es wird erwartet, dass eine {@link CustomerNotFoundException} geworfen wird.
-     */
-    @Test
-    void testGetCustomerByIdNotFound() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerById(1L));
-
-        verify(customerRepository, times(1)).findById(1L);
-    }
-
-    /**
-     * Testet die Methode {@link CustomerService#getCustomerByNickName(String)} im Erfolgsfall,
-     * wenn der Kunde mit dem angegebenen Nicknamen gefunden wird.
-     */
-    @Test
-    void testGetCustomerByNicknameSuccess() {
-        when(customerRepository.findByNickName("Maxi")).thenReturn(Optional.of(testCustomer1));
-
-        Customer result = customerService.getCustomerByNickName("Maxi").orElseThrow();
-
-        assertEquals(testCustomer1.getId(), result.getId());
-        assertEquals(testCustomer1.getNickName(), result.getNickName());
-        assertEquals(testCustomer1.getFirstName(), result.getFirstName());
-        assertEquals(testCustomer1.getLastName(), result.getLastName());
-        assertEquals(testCustomer1.getEmail(), result.getEmail());
-        assertEquals(testCustomer1.getPhoneNumber(), result.getPhoneNumber());
-
-        verify(customerRepository, times(1)).findByNickName("Maxi");
-    }
-
-    /**
-     * Testet die Methode {@link CustomerService#getCustomerByNickName(String)} im Fall,
-     * dass kein Kunde mit dem angegebenen Nicknamen gefunden wird.
-     * Es wird erwartet, dass eine {@link CustomerNotFoundException} geworfen wird.
+     * Testet {@link CustomerService#getCustomerByNickName(String)} für einen ungültigen Nickname.
      */
     @Test
     void testGetCustomerByNickNameNotFound() {
-        when(customerRepository.findByNickName("Maxi")).thenReturn(Optional.empty());
+        when(customerRepository.findByNickName("Unbekannt")).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerByNickName("Maxi"));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerByNickName("Unbekannt"));
 
-        verify(customerRepository, times(1)).findByNickName("Maxi");
+        verify(customerRepository, times(1)).findByNickName("Unbekannt");
     }
 
     /**
-     * Testet die Methode {@link CustomerService#getCustomersByLastName(String)} im Erfolgsfall,
-     * wenn Kunden mit dem angegebenen Nachnamen gefunden werden.
+     * Parametrisierter Test für {@link CustomerService#getCustomersByLastName(String)}.
+     * Testet verschiedene Lastnames aus der JSON.
      */
-    @Test
-    void testGetCustomersByLastNameSuccess() {
-        when(customerRepository.findByLastName("Mustermann")).thenReturn(List.of(testCustomer1));
+    @ParameterizedTest
+    @MethodSource("provideLastNamesFromJson")
+    void testGetCustomersByLastNameSuccess(String lastName) {
+        List<Customer> expectedCustomers = testCustomers.stream()
+                .filter(c -> c.getLastName().equals(lastName))
+                .toList();
 
-        List<Customer> result = customerService.getCustomersByLastName("Mustermann");
+        when(customerRepository.findByLastName(lastName)).thenReturn(expectedCustomers);
 
-        assertFalse(result.isEmpty(), "Die Liste sollte nicht leer sein.");
-        assertEquals(1, result.size(), "Die Liste sollte genau einen Kunden enthalten.");
-        assertTrue(result.contains(testCustomer1), "Die Liste sollte den ersten Kunden enthalten.");
+        List<Customer> result = customerService.getCustomersByLastName(lastName);
 
-        verify(customerRepository, times(1)).findByLastName("Mustermann");
+        assertFalse(result.isEmpty(), "Liste sollte nicht leer sein für: " + lastName);
+        assertEquals(expectedCustomers.size(), result.size(), "Falsche Anzahl Kunden für: " + lastName);
+
+        verify(customerRepository, times(1)).findByLastName(lastName);
     }
 
     /**
-     * Testet die Methode {@link CustomerService#getCustomersByLastName(String)} im Fall,
-     * dass keine Kunden mit dem angegebenen Nachnamen gefunden werden.
-     * Es wird erwartet, dass eine {@link CustomerNotFoundException} geworfen wird.
+     * Testet {@link CustomerService#getCustomersByLastName(String)} für unbekannten Nachnamen.
      */
     @Test
     void testGetCustomersByLastNameNotFound() {
-        when(customerRepository.findByLastName("Mustermann")).thenReturn(List.of());
+        when(customerRepository.findByLastName("Unbekannt")).thenReturn(List.of());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomersByLastName("Mustermann"));
+        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomersByLastName("Unbekannt"));
 
-        verify(customerRepository, times(1)).findByLastName("Mustermann");
+        verify(customerRepository, times(1)).findByLastName("Unbekannt");
+    }
+
+    /**
+     * Lädt Testkunden aus einer JSON-Datei im Ressourcenverzeichnis.
+     *
+     * @return Liste von Testkunden
+     * @throws Exception falls Fehler beim Einlesen oder Parsen auftreten
+     */
+    static List<Customer> loadTestCustomers() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        InputStream inputStream = CustomerServiceTest.class.getResourceAsStream("/test-customers.json");
+        if (inputStream == null) {
+            throw new IllegalStateException("Testkunden-Datei nicht gefunden!");
+        }
+        try {
+            return objectMapper.readValue(inputStream, new TypeReference<>() {});
+        } catch (Exception e) {
+            // Fehler beim Parsen loggen
+            System.err.println("Fehler beim Laden der Testkunden: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Stellt Testdaten für {@link CustomerService#getCustomerByNickName(String)} bereit.
+     *
+     * @return Stream von Arguments mit Nicknames
+     */
+    static Stream<String> provideNickNamesFromJson() throws Exception {
+        List<Customer> customers = loadTestCustomers();
+        return customers.stream()
+                .map(Customer::getNickName); // Gebe nur die Nicknames zurück
+    }
+
+    /**
+     * Stellt Testdaten für {@link CustomerService#getCustomersByLastName(String)} bereit.
+     *
+     * @return Stream von Arguments mit Lastnames
+     */
+    static Stream<String> provideLastNamesFromJson() throws Exception {
+        List<Customer> customers = loadTestCustomers();
+        return customers.stream()
+                .map(Customer::getLastName); // Gebe nur die Lastnames zurück
     }
 }

@@ -26,8 +26,11 @@ public class Customer {
     private Long id;
 
     /**
-     * Optionaler Spitzname des Kunden.
+     * Spitzname des Kunden.
+     * Darf nicht {@code null} sein. muss unique sein
      */
+    @NotNull(message = "Der Spitzname muss angegeben werden!")
+    @Column(unique = true)
     private String nickName;
 
     /**
