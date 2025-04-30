@@ -3,21 +3,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Definiert das übergeordnete POM, das die Konfiguration für Spring Boot enthält -->
+    <!-- Definiert die übergeordnete POM, die für Spring Boot-Initialisierung sorgt -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.4</version>
-        <relativePath/> <!-- Sucht das übergeordnete POM im Repository -->
+        <relativePath/> <!-- Lookup der übergeordneten POM im Repository -->
     </parent>
 
-    <!-- Basisinformationen zum Projekt -->
+    <!-- Basis-Maven-Projektdefinition -->
     <groupId>de.spring.tutorial</groupId>
-    <artifactId>customer-service</artifactId>
+    <artifactId>auth-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>customer-service</name>
+    <name>auth-service</name>
     <packaging>jar</packaging>
-    <description>Customer Service</description>
+    <description>Auth Service</description>
 
     <properties>
         <!-- Hier werden verschiedene Versionen für Abhängigkeiten und Plugins definiert -->
@@ -53,6 +53,36 @@
             <version>${spring.boot.version}</version>
         </dependency>
 
+        <!-- Spring Boot Security Starter (für die Authentifizierung und Sicherheit) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+
+        <!-- JWT API (für JSON Web Token Implementierung) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <!-- JWT Implementation (für die konkrete JWT-Implementierung) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- JWT Jackson (für die JSON-Verarbeitung in JWT) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- MySQL Connector (für die Verbindung zur MySQL-Datenbank) -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -75,6 +105,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Boot Test Starter (für Testen der Spring Boot-Anwendungen) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
