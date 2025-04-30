@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Definiert das übergeordnete POM, das die Konfiguration für Spring Boot enthält -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/> <!-- Sucht das übergeordnete POM im Repository -->
+    </parent>
+
+    <!-- Basisinformationen zum Projekt -->
+    <groupId>de.spring.tutorial</groupId>
+    <artifactId>api-gateway</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>api-gateway</name>
+    <packaging>jar</packaging>
+    <description>Api Gateway</description>
+
+    <properties>
+        <java.version>23</java.version>
+        <spring-boot.version>3.4.4</spring-boot.version>
+        <spring-cloud.version>2024.0.1</spring-cloud.version>
+        <spring-cloud-gateway.version>4.2.1</spring-cloud-gateway.version>
+        <spring-webflux.version>3.4.2</spring-webflux.version>
+        <lombok.version>1.18.36</lombok.version>
+
+        <!-- Spring Boot Maven Plugin Version -->
+        <spring-boot-maven-plugin.version>3.4.4</spring-boot-maven-plugin.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Spring Cloud Gateway -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+            <version>${spring-cloud-gateway.version}</version>
+        </dependency>
+
+        <!-- Spring WebFlux -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>${spring-webflux.version}</version>
+        </dependency>
+
+        <!-- Lombok (für Reduktion von Boilerplate-Code, z.B. Getter/Setter, Konstruktoren) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -5,18 +5,15 @@ import de.spring.tutorial.security.JwtAuthenticationFilter;
 import de.spring.tutorial.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Konfiguriert die Sicherheitseinstellungen für den Customer-Service.
- * Diese Klasse enthält die Konfiguration für Authentifizierung, Autorisierung und das Handling von Sicherheitsfehlern.
- * Der JWT-Filter wird hier zur Tokenvalidierung eingesetzt.
+ * Sicherheitskonfiguration für die Anwendung.
+ * Diese Klasse konfiguriert die HTTP-Sicherheitsregeln und fügt den JWT-Filter für die Authentifizierung hinzu.
  */
 @Configuration
 public class SecurityConfig {
@@ -25,10 +22,10 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * Konstruktor zur Injektion der benötigten Beans.
+     * Konstruktor zur Initialisierung der Sicherheitskonfiguration.
      *
-     * @param jwtAuthenticationEntryPoint der JWT-Authentifizierungseintrag
-     * @param jwtTokenProvider der JWT-Token-Provider
+     * @param jwtAuthenticationEntryPoint der EntryPoint für die JWT-Authentifizierung
+     * @param jwtTokenProvider der Provider für die JWT-Token-Validierung
      */
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtTokenProvider jwtTokenProvider) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
@@ -36,43 +33,27 @@ public class SecurityConfig {
     }
 
     /**
-     * Bean für den AuthenticationManager, der für die Authentifizierung zuständig ist.
+     * Konfiguriert die Sicherheitsfilterkette.
+     * Der JWT-Filter wird hinzugefügt, um Anfragen mit einem gültigen Token zu authentifizieren.
      *
-     * @param authConfig die Authentifizierungskonfiguration
-     * @return der AuthenticationManager
-     * @throws Exception wenn ein Fehler bei der Erstellung des AuthenticationManager auftritt
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
-
-    /**
-     * Bean für die Sicherheitsfilterkette, die den HTTP-Sicherheitskonfigurationsfluss festlegt.
-     *
-     * @param http das HttpSecurity-Objekt, das für die Konfiguration von HTTP-Sicherheit verantwortlich ist
-     * @return die konfigurierte Sicherheitsfilterkette
-     * @throws Exception wenn ein Fehler bei der Konfiguration auftritt
+     * @param http das HttpSecurity-Objekt für die Sicherheitskonfiguration
+     * @return die konfigurierte SecurityFilterChain
+     * @throws Exception bei Fehlern während der Konfiguration
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Den JWT-Filter zur Tokenvalidierung einfügen
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
 
         http
                 .cors(AbstractHttpConfigurer::disable)
-
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .exceptionHandling(exceptionHandling ->
                         exceptionHandling.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Token-Validierung
-                // URL-Zugriffsrechte konfigurieren
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/auth/**").permitAll()

@@ -10,8 +10,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Filter zur JWT-Authentifizierung.
@@ -23,28 +25,29 @@ import java.io.IOException;
  * Es werden dabei keine Rollen (Authorities) gesetzt – die Authentifizierung dient nur zur
  * Identifizierung des Benutzers, nicht zur Autorisierung.
  */
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * Erstellt einen neuen JwtAuthenticationFilter.
+     * Konstruktor für den JWT-Authentifizierungsfilter.
      *
-     * @param jwtTokenProvider der Provider zur Token-validierung und Extraktion von Informationen.
+     * @param jwtTokenProvider der Provider zur Token-Validierung und Extraktion von Benutzerinformationen.
      */
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
-     * Führt die JWT-Validierung für eingehende Anfragen durch und setzt bei Erfolg
-     * eine einfache {@link UsernamePasswordAuthenticationToken} in den Sicherheitskontext.
+     * Führt die JWT-Validierung durch und setzt bei erfolgreicher Validierung die Benutzeridentität
+     * in den Spring Security Kontext.
      *
-     * @param request      die aktuelle HTTP-Anfrage
-     * @param response     die aktuelle HTTP-Antwort
-     * @param filterChain  die restliche Filterkette
+     * @param request die aktuelle HTTP-Anfrage
+     * @param response die aktuelle HTTP-Antwort
+     * @param filterChain die restliche Filterkette
      * @throws ServletException im Fehlerfall
-     * @throws IOException      im Fehlerfall
+     * @throws IOException im Fehlerfall
      */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -57,12 +60,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
             String mail = jwtTokenProvider.getUserMailFromToken(jwt);
 
-            // Authentifizierung ohne Authorities
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(mail, null);
+            log.info("Token ist gültig. Extrahierte E-MAil: {}", mail);
 
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(mail, null, List.of());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            log.warn("Token ist nicht vorhanden oder ungültig.");
         }
 
         filterChain.doFilter(request, response);
@@ -70,10 +75,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Extrahiert das JWT aus dem Authorization-Header der HTTP-Anfrage.
-     * Erwartet das Format: "Bearer &lt;token&gt;".
+     * Erwartet das Format: "Bearer <token>".
      *
      * @param request die aktuelle HTTP-Anfrage
-     * @return das extrahierte JWT oder {@code null}, falls kein gültiges Token vorhanden ist
+     * @return das extrahierte JWT oder {@code null}, wenn kein gültiges Token vorhanden ist
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
