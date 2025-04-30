@@ -53,6 +53,36 @@
             <version>${spring.boot.version}</version>
         </dependency>
 
+        <!-- Spring Boot Security Starter (für die Authentifizierung und Sicherheit) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+
+        <!-- JWT API (für JSON Web Token Implementierung) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <!-- JWT Implementation (für die konkrete JWT-Implementierung) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- JWT Jackson (für die JSON-Verarbeitung in JWT) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- MySQL Connector (für die Verbindung zur MySQL-Datenbank) -->
         <dependency>
             <groupId>com.mysql</groupId>
