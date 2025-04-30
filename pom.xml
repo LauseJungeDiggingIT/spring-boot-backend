@@ -12,7 +12,7 @@
     <properties>
         <spring.boot.version>3.4.4</spring.boot.version>
         <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-        <javadoc.version>3.6.3</javadoc.version>
+        <javadoc.version>3.11.2</javadoc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
