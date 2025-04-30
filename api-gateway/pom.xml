@@ -26,9 +26,9 @@
         <spring-cloud-gateway.version>4.2.1</spring-cloud-gateway.version>
         <spring-webflux.version>3.4.2</spring-webflux.version>
         <lombok.version>1.18.36</lombok.version>
-
-        <!-- Spring Boot Maven Plugin Version -->
-        <spring-boot-maven-plugin.version>3.4.4</spring-boot-maven-plugin.version>
+        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
+        <maven.compiler.version>3.10.1</maven.compiler.version>
+        <file.encoding>UTF-8</file.encoding>
     </properties>
 
     <dependencyManagement>
@@ -70,11 +70,44 @@
 
     <build>
         <plugins>
-            <!-- Spring Boot Maven Plugin -->
+            <!-- Maven Resources Plugin (zur Verarbeitung von Ressourcen wie Properties-Dateien) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <configuration>
+                    <encoding>${file.encoding}</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Compiler Plugin (zur Konfiguration des Java Compilers) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <release>${java.version}</release>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <encoding>${file.encoding}</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- Spring Boot Maven Plugin (für das Verpacken und Ausführen der Anwendung) -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
+                <version>${spring-boot.version}</version>
             </plugin>
         </plugins>
     </build>
