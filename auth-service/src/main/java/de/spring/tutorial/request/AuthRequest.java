@@ -11,8 +11,6 @@ import lombok.Data;
  * Request-Objekt für die Authentifizierungs- und Registrierungsanforderungen.
  * Dieses Objekt wird verwendet, um die Eingaben des Benutzers zu empfangen,
  * wie die E-Mail-Adresse und das Passwort, die für den Login oder die Registrierung benötigt werden.
- *
- * @author Dein Name
  */
 @Data
 public class AuthRequest {
